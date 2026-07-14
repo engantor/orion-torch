@@ -1,0 +1,28 @@
+# ---- build artifacts ----
+*.obj
+*.exe
+*.pdb
+*.ilk
+*.dll
+*.exp
+*.lib
+
+# ---- Visual Studio build dirs ----
+.vs/
+x64/
+Debug/
+Release/
+orion/x64/
+orion/Debug/
+orion/Release/
+
+# ---- Visual Studio per-user / cruft ----
+*.vcxproj.user
+*.suo
+*.aps
+*.user
+*.VC.db
+*.VC.opendb
+
+# ---- redundant archive (contents are tracked under claude/) ----
+claude.zip

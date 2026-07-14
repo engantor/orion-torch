@@ -1,0 +1,42 @@
+BEGIN_DESC
+ORION-class torch ship. Cold and dark in a 185 km parking orbit.
+
+STARTUP (keyboard, temporary until the 2D panel exists):
+  1 = arm all three battery banks
+  2 = close INV 1 + AVIONICS + LIFE SUPPORT
+  3 = coolant PUMP 1   <-- BEFORE the reactor, or it scrams in 30 s
+  4 = START REACTOR A  (PUMPDOWN > FIELD > HEAT > IGNITE > ASCENT > ONLINE, ~5 min)
+  5 = close GEN A + ESS FEED  (reactor now carries the ship; banks recharge)
+  6 = close DRIVE CTL  <-- the torch will not fire without this
+  + / -  throttle
+
+Watch the reactor come up on the debug string (bottom-left corner text,
+visible automatically once populated -- Ctrl+F1 opens the camera dialog
+in this build, not a debug toggle).
+END_DESC
+
+BEGIN_ENVIRONMENT
+  System Sol
+  Date MJD 51982.9
+END_ENVIRONMENT
+
+BEGIN_FOCUS
+  Ship Orion-1
+END_FOCUS
+
+BEGIN_CAMERA
+  TARGET Orion-1
+  MODE Extern
+  POS 3.0 -20.00 40.00
+  TRACKMODE TargetRelative
+  FOV 50.00
+END_CAMERA
+
+BEGIN_SHIPS
+Orion-1:Orion
+  STATUS Orbiting Earth
+  ELEMENTS 6556000 0.0001 51.6 0 0 0 51982.9
+  AROT 0.00 0.00 0.00
+  AFCMODE 7
+  PRPLEVEL 0:1.000 1:1.000
+END_SHIPS
