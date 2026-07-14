@@ -16,8 +16,7 @@
 // ============================================================================
 #define STRICT
 #define ORBITER_MODULE
-#include "orbitersdk.h"
-#include "ShipCore.h"
+#include "Orion.h"       // declares class Orion; pulls in orbitersdk.h + ShipCore.h
 
 using namespace orion;
 
@@ -39,29 +38,9 @@ static const double ORION_MAXTHRUST =
 static const double ORION_RCS_THRUST = 6.0e4;
 
 // ============================================================================
-class Orion : public VESSEL4 {
-public:
-    Orion(OBJHANDLE hVessel, int flightmodel);
-
-    void clbkSetClassCaps(FILEHANDLE cfg) override;
-    void clbkPostCreation() override;
-    void clbkPreStep(double simt, double simdt, double mjd) override;
-    void clbkSaveState(FILEHANDLE scn) override;
-    void clbkLoadStateEx(FILEHANDLE scn, void* status) override;
-    int  clbkConsumeBufferedKey(DWORD key, bool down, char* kstate) override;
-
-    // MFDs and panels reach the systems model through this.
-    ShipCore& Core() { return core_; }
-
-private:
-    ShipCore          core_;
-    PROPELLANT_HANDLE ph_main_ = nullptr;
-    PROPELLANT_HANDLE ph_rcs_  = nullptr;
-    THRUSTER_HANDLE   th_main_ = nullptr;
-    THRUSTER_HANDLE   th_rcs_[12] = {};
-    double            carry_ = 0.0;   // leftover sim time for fixed-step integration
-};
-
+//  The Orion class is declared in Orion.h (shared with OrionDPS.cpp so the DPS
+//  MFD can read the systems model). Method definitions follow.
+// ============================================================================
 Orion::Orion(OBJHANDLE hVessel, int flightmodel)
     : VESSEL4(hVessel, flightmodel) {}
 

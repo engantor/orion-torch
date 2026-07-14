@@ -15,8 +15,10 @@ Last updated: 2026-07-14.
 |---|---|
 | `ShipCore.h` / `ShipCore.cpp` | **Engine-agnostic** ship systems model: reactor state machine, electrical bus solve, coolant/thermal loop, torch drive + mass-augmentation mixing. Zero Orbiter dependencies. Unit-tested headless. |
 | `Avionics.h` / `Avionics.cpp` | **Engine-agnostic** IMU (gimbal lock, P52 star alignment), GDC backup reference, pressure-fed RCS with helium makeup from reactor ash. Zero Orbiter dependencies. |
+| `Orion.h` | Declaration of the `Orion` `VESSEL4` class. Extracted from `Orion.cpp` so the separate DPS MFD DLL can cast the focus vessel and read the systems model via inline `Core()`. |
 | `Orion.cpp` | Thin Orbiter `VESSEL4` glue. Owns one `ShipCore`, steps it at fixed 0.1 s, maps its output to Orbiter (thrust, Isp), save/load, temporary keyboard controls, debug string. No physics. |
-| `OrionNavMFD.cpp` | Nav MFD plugin (separate DLL). **Not yet built or integrated.** Design asset. |
+| `OrionDPS.cpp` | **Data Processing System** MFD (Shuttle-GPC/MEDS style), separate plugin DLL. Phase 1+2 built: MDU render, keyboard + scratchpad, SPEC/DISP page switching, and DISP 78 SM SYS SUMM 1 reading live `ShipCore`. |
+| `OrionNavMFD.cpp` | Nav MFD plugin (separate DLL). Has a **real Lambert solver** (universal variables) + a brachistochrone estimate. **Not yet built.** Note: its `MsgProc` returns `int` and casts the instance pointer to `int` — that truncates on x64 and would crash on open; `OrionDPS.cpp` shows the corrected pattern. |
 | `test_core.cpp` | 9 headless tests for `ShipCore` (cold start, dry-start abort, coil quench, stranding, drive gating, mixing ratio, design point, avionics fold-in, persistence). |
 | `test_avionics.cpp` | 8 headless tests for `Avionics` (P52 alignment, maneuver rejection, gimbal lock, GDC survival, realign cadence, RCS helium gating, frozen quad, helium makeup). |
 | `build_tests.bat` | Compiles and runs both headless suites with MSVC. No Orbiter needed. |
@@ -193,14 +195,25 @@ doc.
   PUMPDOWN → FIELD → HEAT → IGNITE → ASCENT → ONLINE.
 - Temporary keyboard controls (`1`–`6`, `+`/`-`).
 - Thrust + runtime Isp (mass augmentation) fed to Orbiter; scenario save/load.
+- **DPS MFD (`OrionDPS.dll`, Phase 1+2):** builds clean, renders a GPC/MEDS-style
+  MDU with a working keypad + scratchpad, SPEC/DISP page switching, and a live
+  DISP 78 SM SYS SUMM 1 reading `ShipCore` (EPS/reactor/thermal/prop/GNC/RCS,
+  colour-coded to the real thresholds). Two DISP 78 fields have no backing model
+  and are proxied, not faked: **CNTL** (no control-bus model → shows AVI power)
+  and **FLOW kg/s** (no mass-flow value → shows `OK`/`NONE` from pump count).
 
 **Stubbed / not done**
+- **DPS beyond Phase 2:** item-entry actuation, fault system, OPS/major modes,
+  GPC voting, and the SPEC pages other than DISP 78 are placeholders. Per the
+  DPS spec, several later pages need `ShipCore` to grow (control buses, richer
+  EPS, environment) — DISP 78 itself needed no core changes.
 - **2D instrument panel: not implemented.** `panel_gen.py`, `PanelAreas.h`, and
   `orion_panel.png` exist as design assets, but no panel code
   (`clbkLoadPanel2D` / `clbkPanelMouseEvent` / `clbkPanelRedrawEvent`) is in
-  `Orion.cpp` yet, and no DDS texture has been generated. This was the next task,
-  interrupted before any code was written.
-- **`OrionNavMFD` (nav MFD plugin DLL): not built.**
+  `Orion.cpp` yet, and no DDS texture has been generated. (Superseded in priority
+  by the DPS; the DPS spec discards the panel-era DSKY draft.)
+- **`OrionNavMFD` (nav MFD plugin DLL): not built** (and needs the x64 `MsgProc`
+  fix noted above before it will run).
 - **Custom mesh: none** — uses the stock `ShuttlePB` stand-in.
 - **RCS thruster groups: only pitch up/down defined** in `clbkSetClassCaps`;
   yaw / roll / translation groups are marked as a TODO in the code.
